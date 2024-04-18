@@ -1,113 +1,294 @@
-import Image from "next/image";
+'use client'
+
+import { AgChartsReact } from 'ag-charts-react';
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-alpine.css';
+import { AgGridReact } from 'ag-grid-react';
+import { motion } from 'framer-motion';
+import React, { useCallback, useRef, useState } from 'react';
+import { FaFileExcel, FaRegTrashAlt } from "react-icons/fa";
+import Glossary from './components/Glossary';
+import LoadingComponent from "./components/Loading";
+import SeparatorLine from './components/SeparatorLine';
+import { columnDefs } from './shared/constants/agGridDefs';
+import { barChartOptions, pieChartOptions, resourceTypeTimeBarChartOptions, scatterChartOptions } from "./shared/constants/chartOptions";
+import useExcelExport from './shared/hooks/useExcelExport';
+import { HarDataRow } from './shared/types/HarData';
+import { processDataForBarChart, processDataForBarChartResourceTypeTime, processDataForPieChart, processDataForScatterChart } from "./shared/utils/proccesChartData";
 
 export default function Home() {
+  const [data, setData] = useState<HarDataRow[]>([]);
+  const [harFile, setHarFile] = useState<File | null>(null);
+  const [fileInputKey, setFileInputKey] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [activeChart, setActiveChart] = useState('pie');
+  const [isGlossaryOpen, setIsGlossaryOpen] = useState<boolean>(true);
+
+  const gridRef = useRef<AgGridReact | null>(null);
+
+  const harData: HarDataRow[] = data;
+  const pieCharData = processDataForPieChart(harData);
+  const barCharData = processDataForBarChart(harData).filter(entry => entry.value > 0);
+  const barCharTimeResourceTypeData = processDataForBarChartResourceTypeTime(harData).filter(entry => entry.value > 0);
+  const scatterCharData = processDataForScatterChart(harData);
+  const { exportToExcel } = useExcelExport();
+
+  const handleExportClick = () => {
+
+    exportToExcel(data, harFile);
+  };
+
+  const onGridReady = useCallback(() => {
+    if (gridRef.current && data.length === 0) {
+      const fakeEvent: any = {
+        target: {
+          files: [new File([''], 'fakefile')],
+        },
+      };
+      handleFileChange(fakeEvent);
+    }
+  }, [data, gridRef]);
+
+
+  const chartOptions: { [key: string]: any | any } = {
+    pie: pieChartOptions(pieCharData),
+    bar: barChartOptions(barCharData),
+    barTime: resourceTypeTimeBarChartOptions(barCharTimeResourceTypeData),
+    scatter: scatterChartOptions(scatterCharData),
+  }
+
+  const switchToChart = (chartType: any) => {
+    setActiveChart(chartType);
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    setErrorMessage(null);
+
+    if (event.target.files && event.target.files.length > 0) {
+      const file = event.target.files[0];
+
+      if (!file.name.endsWith('.har')) {
+        const errorMessage = 'Invalid file format. Please upload a .har file.';
+        console.error(errorMessage);
+        setErrorMessage(errorMessage);
+        return;
+      }
+
+      setHarFile(file);
+      setLoading(true);
+      
+
+      const formData = new FormData();
+      formData.append('harFile', file);
+
+      try {
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          const responseData = await response.json();
+
+          if (Array.isArray(responseData.harData)) {
+            setData(responseData.harData);
+            setIsGlossaryOpen(false);
+          } else {
+            console.error('Invalid data structure returned from the server');
+          }
+        } else {
+          console.error('Failed to upload .har file');
+        }
+      } catch (error) {
+        console.error('Error uploading .har file:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleClearFile = () => {
+    setHarFile(null);
+    setData([]);
+    setErrorMessage(null);
+    setIsGlossaryOpen(true);
+
+
+    setFileInputKey((prevKey) => prevKey + 1);
+  };
+
+  const handleFileChangeFromDrop = async (file: File | null) => {
+    if (file === null) {
+      console.error('No file dropped.');
+      return;
+    }
+
+    setErrorMessage(null);
+
+    if (!file.name.endsWith('.har')) {
+      const errorMessage = 'Invalid file format. Please upload a .har file.';
+      console.error(errorMessage);
+      setErrorMessage(errorMessage);
+      return;
+    }
+
+    setHarFile(file);
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append('harFile', file);
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const responseData = await response.json();
+
+        if (Array.isArray(responseData.harData)) {
+          setData(responseData.harData);
+        } else {
+          console.error('Invalid data structure returned from the server');
+        }
+      } else {
+        console.error('Failed to upload .har file');
+      }
+    } catch (error) {
+      console.error('Error uploading .har file:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFileDragEnter = () => {
+    const uploadContainer = document.getElementById('file-upload-container');
+    if (uploadContainer) {
+      uploadContainer.classList.add('bg-gray-700');
+    }
+  };
+
+  const handleFileDragLeave = () => {
+    const uploadContainer = document.getElementById('file-upload-container');
+    if (uploadContainer) {
+      uploadContainer.classList.remove('bg-gray-700');
+    }
+  };
+
+  const handleFileDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    handleFileDragLeave();
+
+    if (event.dataTransfer.files.length > 0) {
+      const file = event.dataTransfer.files[0];
+      handleFileChangeFromDrop(file);
+    }
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <motion.div
+      className="bg-gray-900 text-white"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <div
+        className="container mx-auto p-10"
+        id="file-upload-container"
+        onDragEnter={handleFileDragEnter}
+        onDragLeave={handleFileDragLeave}
+        onDragOver={(event) => event.preventDefault()}
+        onDrop={handleFileDrop}
+      >
+        <div className="border-dashed border-2 border-gray-700 rounded p-4 mb-5">
+          <div className="mb-8">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4">Supercharge Your Performance</h2>
+            <p className="text-base md:text-lg lg:text-xl text-gray-400 mb-4">
+              Upload your .har file and analyze performance metrics.
+            </p>
+            <div className="flex md:flex-row gap-4 items-center">
+              <input
+                key={fileInputKey}
+                type="file"
+                accept=".har"
+                onChange={handleFileChange}
+                className="p-2 border rounded bg-gray-800 text-white"
+              />
+              {(harFile || errorMessage) && (
+                <motion.button
+                  onClick={handleClearFile}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-red-500 text-white p-2 rounded shadow-md mt-2 md:mt-0"
+                >
+                  <FaRegTrashAlt />
+                </motion.button>
+              )}
+            </div>
+            {errorMessage && (
+              <p className="text-sm text-red-500 mt-2">{errorMessage}</p>
+            )}
+            <p className="text-xs md:text-sm lg:text-base text-gray-500 mt-2">
+              <strong>Drag and drop</strong> your .har file here
+            </p>
+          </div>
         </div>
+
+        {loading ? (
+          <LoadingComponent />
+        ) : harFile ? (
+          <>
+            <>
+              <div className="ag-theme-alpine-dark" style={{ height: 400, width: '100%' }}>
+                <AgGridReact
+                  columnDefs={columnDefs}
+                  rowData={data}
+                  pagination={true}
+                  paginationPageSize={20}
+                  onGridReady={onGridReady}
+                />
+              </div>
+            </>
+
+            {Object.keys(chartOptions).map((chartType) => (
+              <div key={chartType} className={`mt-4 ${activeChart === chartType ? '' : 'hidden'}`}>
+                <AgChartsReact options={chartOptions[chartType]} />
+              </div>
+            ))}
+            <div className="mt-4 flex items-center justify-center space-x-4">
+              {Object.keys(chartOptions).map((chartType) => (
+                <motion.button
+                  key={chartType}
+                  onClick={() => switchToChart(chartType)}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 1 }}
+                  className={`w-6 h-6 rounded-full focus:outline-none transition-all ${activeChart === chartType ? 'bg-blue-500' : 'bg-gray-500'
+                    }`}
+                />
+              ))}
+            </div>
+            <div className="mt-4 flex items-center">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <div className="flex items-center">
+                  <motion.button
+                    onClick={handleExportClick}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-green-500 text-white p-2 rounded shadow-md flex items-center"
+                  >
+                    <span className="text-sm md:text-base lg:text-base xl:text-base">Export to Excel</span>
+                    <FaFileExcel className="ml-2 text-xl md:text-2xl lg:text-3xl" />
+                  </motion.button>
+                </div>
+              </motion.div>
+            </div>
+          </>
+        ) : null}
+        <SeparatorLine />
+        <Glossary isOpen={isGlossaryOpen} />
       </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </motion.div>
   );
 }
