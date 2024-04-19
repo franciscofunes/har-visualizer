@@ -7,6 +7,7 @@ const upload = multer({ storage: storage });
 export const config = {
   api: {
     bodyParser: false,
+    sizeLimit: '20mb',
   },
 };
 
