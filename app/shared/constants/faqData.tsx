@@ -37,7 +37,7 @@ export const faqData = [
           .
         </p>
         <ol className="list-decimal list-inside">
-          <li>Open the Developer Tools from the menu (Menu {">"} More Tools {">"} Developer tools), or by pressing F12 (or Fn-F12) on your keyboard.</li>
+          <li>Open the Developer Tools from the menu (Menu {">&gt;"} More Tools {">&gt;"} Developer tools), or by pressing F12 (or Fn-F12) on your keyboard.</li>
           <li>Open the Network tab.</li>
           <li>Look for a round button at the top left of the Network tab. Make sure it&apos;s red. If it&apos;s grey, click it once to start recording.</li>
           <li>Turn on &quot;Preserve log&quot;.</li>
@@ -59,7 +59,7 @@ export const faqData = [
     answer: (
       <>
         <p>
-          Start Firefox Developer Tools in Network mode (Top right menu {">"} Developer {">"} Network, or Ctrl-Shift-E / Cmd-Alt-E on macOS).
+          Start Firefox Developer Tools in Network mode (Top right menu {">&gt;"} Developer {">&gt;"} Network, or Ctrl-Shift-E / Cmd-Alt-E on macOS).
         </p>
         <p>Turn on &quot;Persist logs&quot; on the right.</p>
         <p>Reproduce the issue.</p>
@@ -75,7 +75,7 @@ export const faqData = [
           You can record your HTTP session using the Network tab in the Developer Tools in Chrome.
         </p>
         <ol className="list-decimal list-inside">
-          <li>Open the Developer Tools from the menu (Menu {">"} More Tools {">"} Developer tools), or by pressing F12 (or Fn-F12) on your keyboard.</li>
+          <li>Open the Developer Tools from the menu (Menu {">&gt;"} More Tools {">&gt;"} Developer tools), or by pressing F12 (or Fn-F12) on your keyboard.</li>
           <li>Click on the Network tab</li>
           <li>Look for a round button at the top left of the Network tab. Make sure it&apos;s red. If it&apos;s grey, click it once to start recording.</li>
           <li>Turn on &quot;Preserve log&quot;.</li>

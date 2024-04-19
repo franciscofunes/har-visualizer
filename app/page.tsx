@@ -35,7 +35,6 @@ export default function Home() {
   const { exportToExcel } = useExcelExport();
 
   const handleExportClick = () => {
-
     exportToExcel(data, harFile);
   };
 
