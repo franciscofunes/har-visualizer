@@ -6,7 +6,7 @@ export const faqData = [
         <p>
           HAR (HTTP Archive) is a file format used by several HTTP session tools to export the captured data. The
           format is basically a JSON object with a particular set of fields. Note that not all the fields in the HAR
-          format are mandatory, and in many cases, some information won't be saved to the file.
+          format are mandatory, and in many cases, some information won&apos;t be saved to the file.
         </p>
         <p className="font-semibold">HAR files contain sensitive data!</p>
         <ul className="list-disc list-inside">
@@ -39,7 +39,7 @@ export const faqData = [
         <ol className="list-decimal list-inside">
           <li>Open the Developer Tools from the menu (Menu {">"} More Tools {">"} Developer tools), or by pressing F12 (or Fn-F12) on your keyboard.</li>
           <li>Open the Network tab.</li>
-          <li>Look for a round button at the top left of the Network tab. Make sure it's red. If it's grey, click it once to start recording.</li>
+          <li>Look for a round button at the top left of the Network tab. Make sure it&apos;s red. If it&apos;s grey, click it once to start recording.</li>
           <li>Turn on "Preserve log".</li>
           <li>Reproduce the issue.</li>
           <li>Save the capture by right-clicking on the grid and choosing "Save as HAR with Content".</li>
@@ -77,7 +77,7 @@ export const faqData = [
         <ol className="list-decimal list-inside">
           <li>Open the Developer Tools from the menu (Menu {">"} More Tools {">"} Developer tools), or by pressing F12 (or Fn-F12) on your keyboard.</li>
           <li>Click on the Network tab</li>
-          <li>Look for a round button at the top left of the Network tab. Make sure it's red. If it's grey, click it once to start recording.</li>
+          <li>Look for a round button at the top left of the Network tab. Make sure it&apos;s red. If it&apos;s grey, click it once to start recording.</li>
           <li>Turn on "Preserve log".</li>
           <li>
             You can use the clear button (a circle with a diagonal line through it) right before trying to reproduce the issue to remove unnecessary header information.
@@ -122,7 +122,7 @@ export const faqData = [
           </li>
         </ol>
         <p>
-          Remember, continuous monitoring and iteration are key to maintaining optimal performance. Regularly analyze captured data, implement improvements, and monitor the impact on your application's speed.
+          Remember, continuous monitoring and iteration are key to maintaining optimal performance. Regularly analyze captured data, implement improvements, and monitor the impact on your application&apos;s speed.
         </p>
       </>
     ),
