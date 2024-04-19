@@ -19,11 +19,9 @@ const Navbar = () => {
             <a className="text-white text-xl font-bold hover:text-gray-200 transition-colors">
               <motion.div
                 className="flex gap-2"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                initial={{ opacity: 0, y: -20 }}
+                whileTap={{ scale: 0.99 }}
+                initial={{ opacity: 0, y: -5 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
               >
                 Har Visualizer <IoAnalyticsSharp />
               </motion.div>
@@ -35,11 +33,9 @@ const Navbar = () => {
               <a className="text-white hover:text-gray-400 transition-colors">
                 <motion.div
                   className="flex gap-1 items-center"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  initial={{ opacity: 0, y: -20 }}
+                  whileTap={{ scale: 0.99 }}
+                  initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2, duration: 0.5 }}
                 >
                   FAQ <FaQuestion/>
                 </motion.div></a>

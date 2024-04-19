@@ -40,9 +40,9 @@ export const faqData = [
           <li>Open the Developer Tools from the menu (Menu {">"} More Tools {">"} Developer tools), or by pressing F12 (or Fn-F12) on your keyboard.</li>
           <li>Open the Network tab.</li>
           <li>Look for a round button at the top left of the Network tab. Make sure it&apos;s red. If it&apos;s grey, click it once to start recording.</li>
-          <li>Turn on "Preserve log".</li>
+          <li>Turn on &quot;Preserve log&quot;.</li>
           <li>Reproduce the issue.</li>
-          <li>Save the capture by right-clicking on the grid and choosing "Save as HAR with Content".</li>
+          <li>Save the capture by right-clicking on the grid and choosing &quot;Save as HAR with Content&quot;.</li>
         </ol>
         <p>For Internet Explorer, you can also use HttpWatch:</p>
         <ol className="list-decimal list-inside">
@@ -61,9 +61,9 @@ export const faqData = [
         <p>
           Start Firefox Developer Tools in Network mode (Top right menu {">"} Developer {">"} Network, or Ctrl-Shift-E / Cmd-Alt-E on macOS).
         </p>
-        <p>Turn on "Persist logs" on the right.</p>
+        <p>Turn on &quot;Persist logs&quot; on the right.</p>
         <p>Reproduce the issue.</p>
-        <p>Save the capture by right-clicking on the grid and choosing "Save all as HAR".</p>
+        <p>Save the capture by right-clicking on the grid and choosing &quot;Save all as HAR&quot;.</p>
       </>
     ),
   },
@@ -78,12 +78,12 @@ export const faqData = [
           <li>Open the Developer Tools from the menu (Menu {">"} More Tools {">"} Developer tools), or by pressing F12 (or Fn-F12) on your keyboard.</li>
           <li>Click on the Network tab</li>
           <li>Look for a round button at the top left of the Network tab. Make sure it&apos;s red. If it&apos;s grey, click it once to start recording.</li>
-          <li>Turn on "Preserve log".</li>
+          <li>Turn on &quot;Preserve log&quot;.</li>
           <li>
             You can use the clear button (a circle with a diagonal line through it) right before trying to reproduce the issue to remove unnecessary header information.
           </li>
           <li>Reproduce the issue.</li>
-          <li>Save the capture by right-clicking on the grid and choosing "Save as HAR with Content".</li>
+          <li>Save the capture by right-clicking on the grid and choosing &quot;Save as HAR with Content&quot;.</li>
         </ol>
       </>
     ),
