@@ -24,10 +24,12 @@ export default async function handler(req: any, res: any) {
         if (req.file && req.file.buffer) {
           const harFile = req.file.buffer.toString();
           const harData = JSON.parse(harFile);
-
           const entries = harData.log.entries;
 
-          const csvData: HarDataRow[] = entries.map((entry: any) => {
+          const jsonData: HarDataRow[] = [];
+          let currentSize = 0;
+
+          entries.forEach((entry: any) => {
             const requestHeaders = entry.request.headers.reduce((acc: any, header: any) => {
               acc[header.name] = header.value;
               return acc;
@@ -38,7 +40,7 @@ export default async function handler(req: any, res: any) {
               return acc;
             }, {});
 
-            return {
+            const entryData: HarDataRow = {
               _initiator_type: entry._initiator.type,
               _initiator_url: entry._initiator.url,
               _initiator_lineNumber: entry._initiator.lineNumber,
@@ -58,9 +60,25 @@ export default async function handler(req: any, res: any) {
               time: entry.time,
               timings: entry.timings,
             };
+
+            const entrySize = Buffer.byteLength(JSON.stringify(entryData), 'utf-8');
+
+            // Check if adding the current entry will exceed the payload size limit
+            if (currentSize + entrySize > 4.5 * 1024 * 1024) {
+              // Send the current chunk of data
+              res.write(JSON.stringify(jsonData));
+              // Reset jsonData and currentSize for the next chunk
+              jsonData.length = 0;
+              currentSize = 0;
+            }
+
+            // Add the current entry to the chunk
+            jsonData.push(entryData);
+            currentSize += entrySize;
           });
 
-          res.status(200).json({ harData: csvData });
+          // Send the remaining chunk of data
+          res.status(200).json({ harData: jsonData });
         } else {
           console.error('No file provided in the request');
           res.status(400).end(); // Bad Request
