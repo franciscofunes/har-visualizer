@@ -3,7 +3,6 @@ import ExcelJS from 'exceljs';
 import { columnDefs } from '../constants/agGridDefs';
 import { HarDataRow } from '../types/HarData';
 
-
 const useExcelExport = () => {
   const [excelErrorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -24,12 +23,16 @@ const useExcelExport = () => {
       });
 
       data.forEach((rowData) => {
-        const values = columnDefs.map((colDef) => rowData[colDef.field as keyof HarDataRow]);
+        const values = columnDefs.map((colDef) => {
+          // Check if the field exists in rowData and has a value
+          const value = rowData[colDef.field as keyof HarDataRow];
+          return value !== undefined ? value : ''; // Provide default value if undefined
+        });
         const row = worksheet.addRow(values);
         row.eachCell((cell) => {
           cell.border = { bottom: { style: 'thin' } };
         });
-      });
+      });      
 
       const excelFileName = harFile ? `${harFile.name.replace('.har', '')}_output.xlsx` : 'output.xlsx';
 

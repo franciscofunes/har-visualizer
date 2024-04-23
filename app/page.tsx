@@ -6,6 +6,7 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 import { AgGridReact } from 'ag-grid-react';
 import { motion } from 'framer-motion';
 import React, { useCallback, useRef, useState } from 'react';
+import { useEdgeStore } from '@/lib/edgestore';
 import { FaFileExcel, FaRegTrashAlt } from "react-icons/fa";
 import Glossary from './components/Glossary';
 import LoadingComponent from "./components/Loading";
@@ -15,6 +16,7 @@ import { barChartOptions, pieChartOptions, resourceTypeTimeBarChartOptions, scat
 import useExcelExport from './shared/hooks/useExcelExport';
 import { HarDataRow } from './shared/types/HarData';
 import { processDataForBarChart, processDataForBarChartResourceTypeTime, processDataForPieChart, processDataForScatterChart } from "./shared/utils/proccesChartData";
+import LoadingProgressComponent from './components/LoadingProgress';
 
 export default function Home() {
   const [data, setData] = useState<HarDataRow[]>([]);
@@ -24,6 +26,8 @@ export default function Home() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeChart, setActiveChart] = useState('pie');
   const [isGlossaryOpen, setIsGlossaryOpen] = useState<boolean>(true);
+  const [fileUrl, setFileUrl] = useState<string>("");
+  const [progress, setProgress] = useState<number>(0);
 
   const gridRef = useRef<AgGridReact | null>(null);
 
@@ -33,6 +37,8 @@ export default function Home() {
   const barCharTimeResourceTypeData = processDataForBarChartResourceTypeTime(harData).filter(entry => entry.value > 0);
   const scatterCharData = processDataForScatterChart(harData);
   const { exportToExcel } = useExcelExport();
+
+  const { edgestore } = useEdgeStore();
 
   const handleExportClick = () => {
     exportToExcel(data, harFile);
@@ -76,43 +82,44 @@ export default function Home() {
 
       setHarFile(file);
       setLoading(true);
-      
-
-      const formData = new FormData();
-      formData.append('harFile', file);
 
       try {
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
+        const res = await edgestore.publicFiles.upload({
+          file,
+          onProgressChange: (progress) => {
+            setProgress(progress)
+          },
+          options: {
+            temporary: true,
+          },
         });
 
-        if (response.ok) {
-          const responseData = await response.json();
+        setFileUrl(res.url)
+        const response = await fetch(res.url);
+        const harDataResponse = await response.json();
 
-          if (Array.isArray(responseData.harData)) {
-            setData(responseData.harData);
-            setIsGlossaryOpen(false);
-          } else {
-            console.error('Invalid data structure returned from the server');
-          }
-        } else {
-          console.error('Failed to upload .har file');
-        }
+        const entries = harDataResponse.log.entries;
+
+        setData(entries);
       } catch (error) {
         console.error('Error uploading .har file:', error);
+        setErrorMessage('Error uploading .har file');
       } finally {
+        setIsGlossaryOpen(false);
         setLoading(false);
       }
     }
   };
 
-  const handleClearFile = () => {
+  const handleClearFile = async () => {
     setHarFile(null);
     setData([]);
     setErrorMessage(null);
     setIsGlossaryOpen(true);
 
+    const res = await edgestore.publicFiles.delete({
+      url: fileUrl,
+    });
 
     setFileInputKey((prevKey) => prevKey + 1);
   };
@@ -139,25 +146,28 @@ export default function Home() {
     formData.append('harFile', file);
 
     try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
+      const res = await edgestore.publicFiles.upload({
+        file,
+        onProgressChange: (progress) => {
+          console.log(progress);
+        },
+        options: {
+          temporary: true,
+        },
       });
 
-      if (response.ok) {
-        const responseData = await response.json();
+      setFileUrl(res.url);
+      const response = await fetch(res.url);
+      const harDataResponse = await response.json();
 
-        if (Array.isArray(responseData.harData)) {
-          setData(responseData.harData);
-        } else {
-          console.error('Invalid data structure returned from the server');
-        }
-      } else {
-        console.error('Failed to upload .har file');
-      }
+      const entries = harDataResponse.log.entries;
+
+      setData(entries);
     } catch (error) {
       console.error('Error uploading .har file:', error);
+      setErrorMessage('Error uploading .har file');
     } finally {
+      setIsGlossaryOpen(false);
       setLoading(false);
     }
   };
@@ -236,7 +246,7 @@ export default function Home() {
         </div>
 
         {loading ? (
-          <LoadingComponent />
+          <LoadingProgressComponent progress={progress} />
         ) : harFile ? (
           <>
             <>

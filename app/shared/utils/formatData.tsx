@@ -28,7 +28,7 @@ export const defaultFormatter = (params: any): string => {
 };
 
 export const sizeFormatter = (params: any): string => {
-    const sizeInBytes = params.data?.response_transferSize;
+    const sizeInBytes = params.data?.response._transferSize;
 
     if (typeof sizeInBytes === 'number') {
         return formatBytes(sizeInBytes, 2);

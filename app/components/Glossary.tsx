@@ -29,12 +29,9 @@ const Glossary: React.FC<GlossaryProps> = ({ isOpen }) => {
       transition={{ duration: 0.3 }}
       className="bg-gray-100 shadow-lg rounded-lg p-6 mt-6 md:mt-0 text-gray-800"
     >
-      <div className={`flex flex-col md:flex-row items-center justify-between ${isExpanded ? 'justify-between' : 'justify-center'}`}>
-        <hr className="border-t-2 border-gray-300 mb-4 w-full md:w-auto" />
-        <div className="flex items-center gap-2">
-          <h2 className="text-lg md:text-xl font-semibold">Glossary of Terms </h2>
-          <TbMoodNerd className="w-6 h-6" />
-        </div>
+      <div className={`flex flex-col md:flex-row items-center justify-center`}>
+        <div className="flex items-center gap-2 justify-center md:justify-start w-full md:w-auto">
+          <h2 className="text-lg md:text-xl font-semibold text-center md:text-left">Glossary of Terms</h2>
         <button onClick={toggleOpen} className="focus:outline-none">
           <motion.div
             initial={false}
@@ -44,6 +41,7 @@ const Glossary: React.FC<GlossaryProps> = ({ isOpen }) => {
             <IoIosArrowDown />
           </motion.div>
         </button>
+        </div>
       </div>
       {isExpanded && (
         <div className="flex justify-center mt-4">

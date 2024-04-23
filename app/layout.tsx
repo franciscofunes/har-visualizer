@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import "./globals.css";
+import { EdgeStoreProvider } from '@/lib/edgestore';
 
 
 export const metadata: Metadata = {
@@ -14,7 +15,9 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
     <html lang="en">
       <body className="bg-gray-900">
         <Navbar />
-        <div className="min-h-screen">{children}</div>
+        <EdgeStoreProvider>
+          <div className="min-h-screen">{children}</div>
+        </EdgeStoreProvider>
         <Footer />
       </body>
     </html>
